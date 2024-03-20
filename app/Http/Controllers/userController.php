@@ -6,7 +6,9 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\DB;
+use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Http\Request;
 
 class userController extends Controller
@@ -60,10 +62,19 @@ class userController extends Controller
 
         $credentials = $req -> only('email', 'password');
 
-        if (Auth::attempt($credentials))
+        if ($token = JWTAuth::attempt($credentials))
         {
-            $user   = Auth::user();
-            $token  = $user -> createToken('AuthToken')->plainTextToken;
+            $data = [
+                'token' => $token,
+                'user' => JWTAuth::user()
+            ];
+
+            return response()->json([
+                'success' => true,
+                'message' => 'authentication success',
+                'data' => $data
+            ]);
+
         }
     }
 
